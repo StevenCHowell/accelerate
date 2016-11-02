@@ -43,11 +43,7 @@ import numpy as np
 # add check for gtx vs tesla/quadro card then set float single/double precision
 
 
-def main():
-
-    n = 32
-    m = 32
-    iteration_max = 1000
+def main(n=4096, m=4096, iteration_max = 1000):
 
     pi = np.pi
     tol = 1.0e-5
@@ -109,6 +105,7 @@ def main():
 
         #pragma omp parallel for shared(m, n, Anew, A)
         #pragma acc kernels loop gang(32), vector(16)
+        '''
         for j in range(1, n-1):
 
             #pragma acc loop gang(16), vector(32)
@@ -117,8 +114,12 @@ def main():
                 Anew[j, i] = 0.25 * ( A[j, i+1] + A[j, i-1] +
                                       A[j-1, i] + A[j+1, i])
                 error = np.max([error, np.abs(Anew[j, i] - A[j, i])])
+        '''
 
+        Anew[1:n-1, 1:m-1] = 0.25 * (A[1:n-1, 2:] + A[1:n-1, :m-2] +
+                                     A[2:, 1:m-1] + A[:m-2, 1:n-1])
 
+        error = np.max([error, np.max(np.abs(Anew - A))])
 
         #pragma omp parallel for shared(m, n, Anew, A)
         #pragma acc kernels loop
@@ -143,4 +144,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main() # 16, 16)
