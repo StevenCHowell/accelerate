@@ -119,7 +119,8 @@ def main(n=4096, m=4096, iteration_max = 1000):
         Anew[1:n-1, 1:m-1] = 0.25 * (A[1:n-1, 2:] + A[1:n-1, :m-2] +
                                      A[2:, 1:m-1] + A[:m-2, 1:n-1])
 
-        error = np.max([error, np.max(np.abs(Anew - A))])
+        error = np.max([error, np.max(np.abs(Anew[1:n-1, 1:m-1] -
+                                             A[1:n-1, 1:m-1]))])
 
         #pragma omp parallel for shared(m, n, Anew, A)
         #pragma acc kernels loop
