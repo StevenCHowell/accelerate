@@ -108,3 +108,9 @@ c_res = cuda_laplace(4, 4, debug=True)
 print(n_res)
 print(c_res)
 print(np.allclose(n_res, c_res))
+
+# cuda_res = {}
+# for n in N[:6]:
+#     res = %timeit -o -n 3 cuda_laplace(n, n)
+#     cuda_res[n] = res
+#     pickle.dump(cuda_res, open('cuda_times_v2.p', 'wb'))
