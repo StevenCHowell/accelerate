@@ -547,14 +547,14 @@ for n in N:
 for n in N[:6]:
     res = %timeit -o -n 3 cuda_laplace(n, n)
     cuda_res[n] = res
-    pickle.dump(cuda_res, open('cuda_times.p', 'wb'))
+    pickle.dump(cuda_res, open('onsager_compute-0-0/cuda_times.p', 'wb'))
 
 
 # profile CUDA vectorization of entire laplace
 for n in N[:5]:
     res = %timeit -o -n 3 cuda_laplace_v2(n, n)
     cuda_res_v2[n] = res
-    pickle.dump(cuda_res_v2, open('cuda_times_v2.p', 'wb'))
+    pickle.dump(cuda_res_v2, open('onsager_compute-0-0/cuda_times_v2.p', 'wb'))
 
 
 # profile serial vectorization of entire laplace
@@ -568,4 +568,6 @@ for n in N:
     res = %timeit -o -n 3 par_laplace_v2(n, n)
     par_res_v2[n] = res
     pickle.dump(par_res_v2, open('par_times_v2.p', 'wb'))
+
+
 '''
