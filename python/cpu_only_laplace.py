@@ -558,14 +558,14 @@ for n in N:
 
 '''
 # profile CUDA vectorization of laplace update
-for n in N[:6]:
+for n in N:
     res = %timeit -o -n 3 cuda_laplace(n, n)
     cuda_res[n] = res
     pickle.dump(cuda_res, open('onsager_head/cuda_times.p', 'wb'))
 
 
 # profile CUDA vectorization of entire laplace
-for n in N[:5]:
+for n in N:
     res = %timeit -o -n 3 cuda_laplace_v2(n, n)
     cuda_res_v2[n] = res
     pickle.dump(cuda_res_v2, open('onsager_head/cuda_times_v2.p', 'wb'))
