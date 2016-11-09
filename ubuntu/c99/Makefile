@@ -1,7 +1,7 @@
 CC=pgc++
-CFLAGS=-fast -ta=gtx -Minfo=accel
+CFLAGS=-fast -ta=tesla:managed -Minfo=accel
 
 all:
-	${CC} ${CFLAGS} main.cpp -o cg_final
+	${CC} ${CFLAGS} main.cpp -o cg
 clean:
 	rm -Rf cg pgprof* *.o core

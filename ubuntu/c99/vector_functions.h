@@ -27,4 +27,3 @@ void waxpby(double alpha, const vector &x, double beta, const vector &y, const v
     wcoefs[i]=alpha*xcoefs[i]+beta*ycoefs[i];
   }
 }
-

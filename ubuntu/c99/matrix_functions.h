@@ -10,7 +10,7 @@ void matvec(const matrix& A, const vector& x, const vector &y) {
   double *restrict Acoefs=A.coefs;
   double *restrict xcoefs=x.coefs;
   double *restrict ycoefs=y.coefs;
-  
+
   #pragma acc kernels
   {
     for(int i=0;i<num_rows;i++) {
