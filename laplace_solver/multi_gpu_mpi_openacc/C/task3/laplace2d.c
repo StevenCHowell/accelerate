@@ -112,20 +112,14 @@ int main(int argc, char** argv)
         
         //TODO: Split into halo and bulk part 
         #pragma acc kernels
-	for( int i = 1; i < M-1; i++ )
-	{
-	  A[jstart][i] = Anew[jstart][i];
-	  A[jend-1][i] = Anew[jend-1][i];
-	}
-        //TODO: Start bulk part asynchronously
-        #pragma acc kernels async
-        for (int j = (jstart+1); j < (jend-1); j++)
+        for (int j = jstart; j < jend; j++)
         {
             for( int i = 1; i < M-1; i++ )
             {
                 A[j][i] = Anew[j][i];
             }
         }
+        //TODO: Start bulk part asynchronously
 
         //Periodic boundary conditions
         int top    = (rank == 0) ? (size-1) : rank-1;
@@ -141,7 +135,6 @@ int main(int argc, char** argv)
         }
         
         //TODO: wait for bulk part
-        #pragma acc wait 
         if(rank == 0 && (iter % 100) == 0) printf("%5d, %0.6f\n", iter, error);
         
         iter++;

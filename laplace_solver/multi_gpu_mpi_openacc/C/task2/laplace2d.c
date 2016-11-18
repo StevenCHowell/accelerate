@@ -68,16 +68,8 @@ int main(int argc, char** argv)
 #endif /*_OPENACC*/
 
     //TODO: set first and last row to be processed by this rank.
-    int chunk_size = ceil( (1.0*N)/size );
-
-    // int jstart = 1;
-    // int jend   = N-1;
-    int jstart = rank * chunk_size;
-    int jend   = jstart + chunk_size;
-
-    // Do not process boundaries
-    jstart = max( jstart, 1 );
-    jend = min( jend, N - 1 );
+    int jstart = 1;
+    int jend   = N-1;
 
     if ( rank == 0) printf("Jacobi relaxation Calculation: %d x %d mesh\n", N, M);
 
@@ -110,10 +102,7 @@ int main(int argc, char** argv)
         }
         //TODO: Calculate global error across all ranks
         //MPI_Allreduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_COMM_WORLD);
-	float globalerror = 0.0f;
-	MPI_Allreduce( &error, &globalerror, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-	error = globalerror;
-
+        
         #pragma acc kernels
         for (int j = jstart; j < jend; j++)
         {
@@ -125,14 +114,12 @@ int main(int argc, char** argv)
 
         //Periodic boundary conditions
         //TODO: Handle periodic boundary conditions and halo exchange with MPI
-        /***
         #pragma acc kernels
         for( int i = 1; i < M-1; i++ )
         {
                 A[0][i]     = A[(N-2)][i];
                 A[(N-1)][i] = A[1][i];
         }
-	***/
         int top    = (rank == 0) ? (size-1) : rank-1;
         int bottom = (rank == (size-1)) ? 0 : rank+1;
 
@@ -140,15 +127,13 @@ int main(int argc, char** argv)
         {
             //TODO: 1. Sent row jstart (first modified row) to top receive lower boundary (jend) from bottom
             //MPI_Sendrecv(const void *sendbuf, int sendcount, MPI_Datatype sendtype, int dest, 0,
-            //                   void *recvbuf, int recvcount, MPI_Datatype recvtype, int source, 0,
+            //                       void *recvbuf, int recvcount, MPI_Datatype recvtype, int source, 0,
             //                 MPI_COMM_WORLD, MPI_STATUS_IGNORE );
-            MPI_Sendrecv( A[jstart], M, MPI_FLOAT, top, 0, A[jend], M, MPI_FLOAT, bottom, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
-	    
+
             //TODO: 2. Sent row (jend-1) (last modified row) to bottom receive upper boundary (jstart-1) from top
             //MPI_Sendrecv(const void *sendbuf, int sendcount, MPI_Datatype sendtype, int dest, 0,
-            //                   void *recvbuf, int recvcount, MPI_Datatype recvtype, int source, 0,
+            //                       void *recvbuf, int recvcount, MPI_Datatype recvtype, int source, 0,
             //                 MPI_COMM_WORLD, MPI_STATUS_IGNORE );
-	    MPI_Sendrecv( A[(jend-1)], M, MPI_FLOAT, bottom, 0, A[(jstart-1)], M, MPI_FLOAT, top, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
         }
         
         if(rank == 0 && (iter % 100) == 0) printf("%5d, %0.6f\n", iter, error);
