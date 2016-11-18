@@ -123,14 +123,20 @@ int main(int argc, char** argv)
         
         //TODO: Split into halo and bulk part
         #pragma acc kernels
-        for (int iy = iy_start; iy < iy_end; iy++)
+        for( int ix = ix_start; ix < ix_end; ix++ )
+	{
+	    A[iy_start][ix] = Anew[iy_start][ix];
+	    A[iy_end-1][ix] = Anew[iy_end-1][ix];
+        }
+        //TODO: Start bulk part asynchronously
+        #pragma acc kernels async
+        for (int iy = (iy_start+1); iy < (iy_end-1); iy++)
         {
-            for( int ix = ix_start; ix < ix_end; ix++ )
+	    for( int ix = ix_start; ix < ix_end; ix++ )
             {
                 A[iy][ix] = Anew[iy][ix];
             }
         }
-        //TODO: Start bulk part asynchronously
 
         //Periodic boundary conditions
         int top    = (rank == 0) ? (size-1) : rank-1;
@@ -144,7 +150,8 @@ int main(int argc, char** argv)
             MPI_Sendrecv( &A[(iy_end-1)][ix_start], (ix_end-ix_start), MPI_REAL_TYPE, bottom, 0, &A[(iy_start-1)][ix_start], (ix_end-ix_start), MPI_REAL_TYPE, top   , 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
         }
         //TODO: wait for bulk part
-
+        #pragma acc wait
+	
         #pragma acc kernels
         for (int iy = iy_start; iy < iy_end; iy++)
         {

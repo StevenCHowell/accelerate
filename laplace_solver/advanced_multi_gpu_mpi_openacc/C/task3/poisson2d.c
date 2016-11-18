@@ -170,8 +170,8 @@ int main(int argc, char** argv)
         #pragma acc kernels
         for( int iy = iy_start; iy < iy_end; iy++ )
         {
-            //to_left[iy]  =
-            //to_right[iy] =
+	  to_left[iy]  = A[iy][ix_start];
+	  to_right[iy] = A[iy][ix_end-1];
         }
         #pragma acc kernels
         for( int iy = iy_start; iy < iy_end; iy++ )
@@ -183,8 +183,8 @@ int main(int argc, char** argv)
         #pragma acc kernels
         for (int iy = iy_start; iy < iy_end; iy++)
         {
-            A[iy][ix_start-1] = A[iy][ix_end-1]; //from_left[iy]
-            A[iy][ix_end]     = A[iy][ix_start]; //from_right[iy]
+	    A[iy][ix_start-1] = from_left[iy]; //A[iy][ix_end-1]; //from_left[iy]
+	    A[iy][ix_end]     = from_right[iy]; //A[iy][ix_start]; //from_right[iy]
         }
         
         if(rank == 0 && (iter % 100) == 0) printf("%5d, %0.6f\n", iter, error);

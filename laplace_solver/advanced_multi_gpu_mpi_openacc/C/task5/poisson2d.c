@@ -152,7 +152,21 @@ int main(int argc, char** argv)
         
         //TODO: Split into halo and bulk part and start bulk part asynchronously in queue 1
         #pragma acc kernels
-        for (int iy = iy_start; iy < iy_end; iy++)
+	for( int ix = ix_start; ix < ix_end; ix++ )
+        {
+            A[iy_start][ix] = Anew[iy_start][ix];
+	    A[iy_end-1][ix] = Anew[iy_end-1][ix];
+        }
+
+        #pragma acc kernels async(2)
+        for( int iy = iy_start; iy < iy_end; iy++ )
+        {
+                to_left[iy]  = Anew[iy][ix_start];
+                to_right[iy] = Anew[iy][ix_end-1];
+        }
+
+        #pragma acc kernels async(1)
+        for (int iy = (iy_start+1); iy < (iy_end-1); iy++)
         {
             for( int ix = ix_start; ix < ix_end; ix++ )
             {
@@ -179,12 +193,7 @@ int main(int argc, char** argv)
         int left   = ranky * sizex + leftx;
         int right  = ranky * sizex + rightx;
         //TODO: Start gathering from Anew before the A to Anew copy into async queue 2 and wait here for queue 2 to finish
-        #pragma acc kernels
-        for( int iy = iy_start; iy < iy_end; iy++ )
-        {
-                to_left[iy]  = A[iy][ix_start];
-                to_right[iy] = A[iy][ix_end-1];
-        }
+        #pragma acc wait(2)
         #pragma acc host_data use_device( to_left, from_left, to_right, from_right )
         {
             //1. Sent to_left starting from first modified row (iy_start) to last modified row to left and receive the same rows into from_right from right 
@@ -200,6 +209,7 @@ int main(int argc, char** argv)
                 A[iy][ix_end]     = from_right[iy];
         }
         //TODO: Wait for asynchronous operations to finish before starting the next iteration
+	#pragma acc wait
         if(rank == 0 && (iter % 100) == 0) printf("%5d, %0.6f\n", iter, error);
         
         iter++;

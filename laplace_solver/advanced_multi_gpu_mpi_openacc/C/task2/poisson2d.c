@@ -57,13 +57,14 @@ int main(int argc, char** argv)
     }
 
     //TODO: Use dim2 size_to_2Dsize( int size ) to create 2D Layout
-    int sizex = 1;
-    int sizey = size;
+    dim2 size2d = size_to_2Dsize(size);
+    int sizex = size2d.x;
+    int sizey = size2d.y;
     assert(sizex*sizey == size);
     
     //TODO: Compute 2D ranks from 1D MPI rank
-    int rankx = 0;      //hint: use %sizex
-    int ranky = rank;   //hint: use /sizex
+    int rankx = rank%sizex;   //hint: use %sizex
+    int ranky = rank/sizex;   //hint: use /sizex
 
     memset(A, 0, NY * NX * sizeof(real));
     memset(Aref, 0, NY * NX * sizeof(real));
@@ -152,8 +153,8 @@ int main(int argc, char** argv)
         int topy    = (ranky == 0) ? (sizey-1) : ranky-1;
         int bottomy = (ranky == (sizey-1)) ? 0 : ranky+1;
         //TODO: map topy,bottomy back to 1D MPI ranks
-        int top    = topy;
-        int bottom = bottomy;
+        int top    = topy    * sizex + rankx; 
+        int bottom = bottomy * sizex + rankx;
         #pragma acc host_data use_device( A )
         {
             //1. Sent row iy_start (first modified row) to top receive lower boundary (iy_end) from bottom
