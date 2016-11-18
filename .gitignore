@@ -144,3 +144,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Emacs backup files
+*~
