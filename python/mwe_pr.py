@@ -1,6 +1,8 @@
 import numba
 import numpy as np
 from scipy.spatial.distance import pdist
+import time
+import sys
 
 import platform
 print('python: {}'.format(platform.python_version()))
@@ -8,14 +10,13 @@ print('numba: {}'.format(numba.__version__))
 print('numpy: {}'.format(np.__version__))
 
 
-
 @numba.jit(['int64[:], int64[:]',
             'float32[:], int64[:]',
             'float64[:], int64[:]'],
-            nopython=True)
+           nopython=True)
 def jit_hist(distances, pr):
     for dist in distances:
-        pr[round(dist)] += 1
+        pr[int(round(dist))] += 1
 
 
 def jit_calc_pr(coor):
@@ -32,8 +33,12 @@ def jit_calc_pr(coor):
 
 
 n = 20000
+repeat = 5
 coor = np.random.random(n*3).reshape((n, 3)) * 100
-
-pr = jit_calc_pr(coor)
-
+tic = time.time()
+for i in range(repeat):
+    pr = jit_calc_pr(coor)
+toc = time.time() - tic
+print('P(r) for {} atoms {} times took {} seconds'.format(n, repeat, toc))
+print('each P(r) took {} seconds'.format(toc/repeat))
 np.savetxt('test.pr', pr)
